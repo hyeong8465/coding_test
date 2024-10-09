@@ -12,7 +12,8 @@ for i in recommend_arr:
     time += 1
     if i not in [j[0] for j in window]:
         if len(window) < n:
-            window.append([i,1,time])
+            rec = 1
+            window.append([i,rec,time])
         else:
             window.sort(key = lambda x: (-x[1],-x[2]))
             window[-1][0] = i
