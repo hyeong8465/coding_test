@@ -1,31 +1,39 @@
 import sys
+
 input = sys.stdin.readline
-
+sys.setrecursionlimit(10000)
 n = int(input())
-papers = [list(map(int, input().split())) for _ in range(n)]
 
-result = {-1:0, 0:0, 1:0}
+# 행렬
+matrix = [list(map(int, input().split())) for _ in range(n)]
 
-def check(papers):
-    plag = False
-    temp = papers[0][0]
-    for paper in papers:
-        for p in paper:
-            if p != temp:
-                plag = True
-                break
-    if plag:
-        a = len(papers)//3
-        for i in range(3):
-            for j in range(3):
-                sub = [row[j*a:(j+1)*a] for row in papers[i*a:(i+1)*a]]
-                check(sub)
+# 종이 개수
+cnt = []
+
+# 분할정복
+def divide(x, y, n):
+    color = matrix[x][y]
+
+    # 색 같은지 판별
+    for i in range(x, x + n):
+        for j in range(y, y + n):
+
+            # 색깔이 다르면 분할정복
+            if color != matrix[i][j]:
+                for a in range(3):
+                    for b in range(3):
+                        divide(x + (n//3)*a, y + (n//3)*b, n//3)
+                return
+
+    # 색깔에 따라 개수 삽입
+    if color == 1:
+        cnt.append(1)
+
+    elif color == -1:
+        cnt.append(-1)
+
     else:
-        result[temp] += 1
+        cnt.append(0)
 
-check(papers)
-for k, v in result.items():
-    print(v)
-    
-    
-    
+divide(0, 0, n)
+print(cnt.count(-1), cnt.count(0), cnt.count(1), sep='\n')
