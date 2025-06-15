@@ -1,34 +1,15 @@
-"""
-10:53
-수업 n개
-최소의 강의실 사
-
-n: 20만
-flatten해서 시작, 종료
-현재 사용중인 강의실 수만 체크
-"""
 import sys
 input = sys.stdin.readline
+import heapq
 
 n = int(input())
-arr = []
-for _ in range(n):
-    s,t = map(int, input().split())
-    arr.append((s,0))
-    arr.append((t,1))
-arr.sort(key = lambda x: (x[0],-x[1]))
+arr = [tuple(map(int, input().split())) for _ in range(n)]
+arr.sort()
 
-# print(arr)
+heap = []
+for start, end in arr:
+    if heap and heap[0] <= start:
+        heapq.heappop(heap)  # 기존 강의실 사용 가능
+    heapq.heappush(heap, end)  # 새로운 수업 할당
 
-ans = 0
-temp = 0
-for time, state in arr:
-    if state == 0:
-        temp += 1
-        ans = max(ans, temp)
-    else:
-        temp -= 1
-    # print(ans)
-print(ans)
-    
-
+print(len(heap))  # 현재 heap에 들어있는 수업 수 == 필요한 강의실 수
