@@ -1,46 +1,33 @@
-"""
-15:00
-stack
-n자리 숫자에서 k개의 숫자를 지워서 얻을 수 있는 가장 큰 수 구하기
+import sys
 
-k, n: 50만
+# 입력 처리
+n, k = map(int, sys.stdin.readline().split())
+num_str = sys.stdin.readline().rstrip()
 
+# 결과를 담을 스택
+stack = []
+# 제거 횟수를 저장할 변수
+k_removals = k
 
-try1: 완전 탐색
-nCk -> 시간 초과
-
-try2: stack
-stack의 맨 뒤보다 낮은 값이 오면 스택에 쌓고
-더 큰 값이면 맨 뒤를 빼고 넣음
-
-"""
-# O(N*K)
-n, k = map(int, input().split())
-num = input()
-
-result = []
-
-start_index = 0
-for i in range(n - k):
-    end_index = k + i + 1
+# 숫자를 하나씩 순회
+for digit in num_str:
+    # 1. 스택이 비어있지 않고,
+    # 2. 아직 지울 횟수가 남았고,
+    # 3. 스택의 마지막 숫자가 현재 숫자보다 작으면
+    while stack and k_removals > 0 and stack[-1] < digit:
+        # 스택에서 마지막 숫자를 제거 (더 큰 숫자로 교체하기 위해)
+        stack.pop()
+        k_removals -= 1
     
-    max_digit = '0'
-    max_idx = start_index
-    for j in range(start_index, end_index):
-        if num[j] > max_digit:
-            max_digit = num[j]
-            max_idx = j
-            if max_digit == '9':
-                break
-    
-    # 찾은 가장 큰 숫자를 결과에 추가
-    result.append(max_digit)
-    # 다음 탐색은 찾은 위치 바로 다음부터 시작
-    start_index = max_idx + 1
+    # 현재 숫자를 스택에 추가
+    stack.append(digit)
 
+# 만약 k가 남아있다면(예: "98765" 같은 내림차순 숫자)
+# 결과값의 뒤에서부터 k개 만큼 제거
+if k_removals > 0:
+    result = stack[:-k_removals]
+else:
+    result = stack
+    
+# 최종 결과 출력
 print("".join(result))
-
-# O(N)
-
-
-
