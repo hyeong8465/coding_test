@@ -18,7 +18,7 @@ else:
         time += 1
         for crane in cranes:
             if cargos and crane < cargos[-1]:
-                continue
+                break
             for cargo in cargos:
                 if crane >= cargo:
                     cargos.remove(cargo)
