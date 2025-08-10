@@ -1,7 +1,5 @@
-import sys
-
-S = list(sys.stdin.readline().rstrip())
-T = list(sys.stdin.readline().rstrip())
+S = list(input())
+T = list(input())
 
 # T->S
 while(1):
