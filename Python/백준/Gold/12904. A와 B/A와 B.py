@@ -1,32 +1,18 @@
-from collections import deque
+import sys
 
-s = list(input())
-t = list(input())
+S = list(sys.stdin.readline().rstrip())
+T = list(sys.stdin.readline().rstrip())
 
-s_que = deque(s)
-t_que = deque(t)
-
-reverse = 0
-while len(t_que) > len(s_que):
-    if reverse: # 역방향
-        back = t_que.popleft() # 앞에서 뺌
-    else: # 순방향
-        back = t_que.pop() # 뒤에서 뺌
-    # print(back)
-    
-    if back =='A':
-        continue
+# T->S
+while(1):
+    if T == S:
+        print(1)
+        break
+    if len(T) == 0:
+        print(0)
+        break
+    if T[-1] == 'B':
+        T.pop()
+        T = T[::-1]
     else:
-        reverse = (reverse + 1) % 2
-    # print(t_que)
-    
-if reverse:
-    t = list(t_que)[::-1]
-else:
-    t = list(t_que)
-
-# print(t, s)
-if t == s:
-    print(1)
-else:
-    print(0)
+        T.pop()
