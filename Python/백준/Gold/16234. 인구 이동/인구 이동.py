@@ -1,5 +1,5 @@
 """
-11:04 -> 
+11:04 -> 11:49
 아래 방법에 의해 인구 이동이 없을 때까지 지속
 1. 국경선을 공유하는 두 나라의 인구 차이가 l명 이상, r명 이하라면, 국경선 오픈
 2. 국경선 열고 이동 시작
@@ -13,7 +13,7 @@
 시간 제한 2초
 가능한 인구 이동은 최대 2000일
 
-1. dfs, bfs 중 어떤 게 더 적절?
+1. dfs, bfs 중 어떤 게 더 적절? -> bfs 추천
 2. 연합을 어떤 구조로 저장?
 
 dfs로 연합 찾기 -> 연합 어떻게 기록?
@@ -75,7 +75,7 @@ while True:
                 # print(route, total)
                 if len(route) > 1:
                     con = True
-                update(route, total)
+                    update(route, total)
     # for t in temp:
     #     print(*t)
     # print("==="*10)
