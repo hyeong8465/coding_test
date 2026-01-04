@@ -28,7 +28,24 @@ countries = [list(map(int, input().split())) for _ in range(n)]
 dx = [1,0,-1,0]
 dy = [0,1,0,-1]
 
-# def dfs(x,y,num,route,total):
+# global 변수를 안 쓴 버전
+def dfs(x,y,num, route):
+    route.append((x,y))
+    current_total = countries[x][y]
+    temp[x][y] = num
+    
+    for i in range(4):
+        nx = x+dx[i]
+        ny = y+dy[i]
+        if 0<=nx<n and 0<=ny<n and temp[nx][ny] == 0 and l<=abs(countries[x][y]-countries[nx][ny])<=r:
+            child_total = dfs(nx,ny,num, route)
+            current_total += child_total
+    
+    return current_total
+
+# global 변수를 쓴 버전
+# def dfs(x,y,num):
+#     global route, total
 #     for i in range(4):
 #         nx = x+dx[i]
 #         ny = y+dy[i]
@@ -38,21 +55,7 @@ dy = [0,1,0,-1]
 #             total+=countries[nx][ny]
 #             # for t in temp:
 #             #     print(*t)
-#             dfs(nx,ny,num,route,total)
-#     return route, total
-
-def dfs(x,y,num):
-    global route, total
-    for i in range(4):
-        nx = x+dx[i]
-        ny = y+dy[i]
-        if 0<=nx<n and 0<=ny<n and temp[nx][ny] == 0 and l<=abs(countries[x][y]-countries[nx][ny])<=r:
-            temp[nx][ny] = num # 방문 처리
-            route.append((nx,ny))
-            total+=countries[nx][ny]
-            # for t in temp:
-            #     print(*t)
-            dfs(nx,ny,num)
+#             dfs(nx,ny,num)
 
 def update(route, total):
     val = total//len(route)
@@ -67,26 +70,37 @@ while True:
     for i in range(n):
         for j in range(n):
             if temp[i][j] == 0:
-                num += 1
-                temp[i][j] = num
-                route = [(i,j)]
-                total = countries[i][j]
-                dfs(i,j,num)
-                # print(route, total)
+                num+=1
+                route = []
+                total = dfs(i,j,num, route)
                 if len(route) > 1:
                     con = True
                     update(route, total)
-    # for t in temp:
-    #     print(*t)
-    # print("==="*10)
-    # for c in countries:
-    #     print(*c)
     if not con:
         break
     ans += 1
 print(ans)
 
+"""
+Study
+1. 연합을 찾는 과정에서 dfs/bfs 선택?
 
+
+2. global 변수를 쓰지 않고 route, total 넘기는 법
+재귀 함수 안에서
+list.append()를 하면 원본 리스트가 수정되기 때문에 재귀 호출이 끝나도 데이터가 남아있음
+total += 를 하면 기존 total 값을 바꾸는 게 아니라 새로운 값을 가진 total 변수가 생성됨
+-> integer는 immutable 객체이기 때문에 total 값을 아무리 수정해도 부모 함수에 있는 total 변수에 아무런 영향을 주지 않음
+
+자식 함수가 return하고, 부모함수에서 해당 값을 extend, += 하면 됨
+하지만 매번 extend하는 건 느리기 때문에, 리스트는 인자로 넘기고 합계는 리턴받는 방식 추천
+
+
+3. bfs로 구현
+
+
+
+"""
             
 
 
