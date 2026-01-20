@@ -25,42 +25,45 @@ robots = deque([0]*n)
 # print(naegus)
 
 ans = 0
+zero_cnt = naegus.count(0)
 while True:
 # for _ in range(3):
     ans += 1
     # 회전
-    last = naegus.pop()
-    naegus.appendleft(last)
-    # print("내구도 회전:", naegus)
+    naegus.rotate(1)
+    robots.rotate(1)
+    robots[-1] = 0
     
-    last = robots.pop()
-    robots.appendleft(0)
-    if robots[-1] != 0:
-        robots[-1] = 0
+    # print("내구도 회전:", naegus)
     # print("로봇 회전:",robots)
 
     # 이동
     for i in range(n-2,-1,-1):
         if robots[i] == 0: continue
         if robots[i+1] == 0 and naegus[i+1] >= 1:
-            robots[i+1] = robots[i]
+            robots[i+1] = 1
             robots[i] = 0
             naegus[i+1] -= 1
-    if robots[-1] != 0:
-        robots[-1] = 0
+            
+            if naegus[i+1] == 0:
+                zero_cnt += 1
+    robots[-1] = 0
     
     # print("이동 후 내구도:", naegus)
     # print("이동 후 로봇:", robots)
 
     # 새로운 로봇    
-    if naegus[0] != 0:
+    if naegus[0] > 0:
         robots[0] = 1
         naegus[0] -= 1
-        # print("새로운 로봇 추가:", robots)
-        # print("새로운 로봇 추가 후 내구도:", naegus)
+        if naegus[0] == 0:
+            zero_cnt += 1
+    
+    # print("새로운 로봇 추가:", robots)
+    # print("새로운 로봇 추가 후 내구도:", naegus)
 
-    cnt = naegus.count(0) # -> 최적화할 수 있는 포인트
-    if cnt >= k:
+    # zero_cnt = naegus.count(0) # -> 최적화할 수 있는 포인트
+    if zero_cnt >= k:
         print(ans)
         break
     # print("==="*10)
