@@ -1,28 +1,3 @@
-"""
-21:05
-격자: 2**n x 2**n
-얼음의 양이 담겨 있음
-
-단계: l
-1. 2**l x 2**l 크기의 부분 격자로 나눔
-2. 모든 부분 격자를 시계방향으로 90도 회전
-3. 얼음이 있는 칸 3개 이상과 인전해있지 않은 칸의 얼음 1 감소
-
-ans
-1. 남아 있는 얼음의 합
-2. 가장 큰 덩어리가 차지하는 칸의 개수 -> dfs로 집합 찾기
-
-
-1. 회전
-for row: 2**l간격
-    for col: 2**l 간격
-
-
-2. 상하좌우 탐색
-
-
-시뮬
-"""
 import sys
 from collections import deque
 input = sys.stdin.readline
@@ -73,6 +48,7 @@ def bfs(x,y):
 
 
 n, q = map(int, input().split())
+N_SIZE = 2**n
 ices = [list(map(int, input().split())) for _ in range(2**n)]
 l_list = list(map(int, input().split()))
 
@@ -85,8 +61,8 @@ for q_i in range(q):
     l = l_list[q_i]
     
     # move
-    for i in range(0, 2**n, 2**l):
-        for j in range(0, 2**n, 2**l):
+    for i in range(0, N_SIZE, 2**l):
+        for j in range(0, N_SIZE, 2**l):
             
             submatrix = []
             for ii in range(i,i+2**l):
@@ -99,16 +75,16 @@ for q_i in range(q):
                 ices[ii][j:j+2**l] = rotated_sub_matrix[idx]
     
     # check
-    reduce = [[0]*2**n for _ in range(2**n)]
-    for i in range(2**n):
-        for j in range(2**n):
-            reduce[i][j] = is_reduce(i,j)
+    reduce_candidates = []
+    for i in range(N_SIZE):
+        for j in range(N_SIZE):
+            if is_reduce(i,j):
+                reduce_candidates.append((i,j))
     
     # reduce
-    for i in range(2**n):
-        for j in range(2**n):
-            if ices[i][j] != 0 and reduce[i][j]: # 수정
-                ices[i][j] -= 1
+    for i, j in reduce_candidates:
+        if ices[i][j] != 0: # 수정
+            ices[i][j] -= 1
 
     # print("==="*10)
     # for ice in ices:
@@ -123,8 +99,8 @@ print(ans)
 #     print(*ice)
 
 ans = 0
-for i in range(2**n):
-    for j in range(2**n):
+for i in range(N_SIZE):
+    for j in range(N_SIZE):
         if not visited[i][j] and ices[i][j] != 0: # 수정
             # print((i,j))
             ans = max(ans, bfs(i,j))
@@ -132,6 +108,3 @@ for i in range(2**n):
             #     print(*v)
 
 print(ans)
-
-# for v in visited:
-#     print(*v)
