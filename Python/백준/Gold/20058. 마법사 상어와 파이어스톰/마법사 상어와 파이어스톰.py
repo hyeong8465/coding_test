@@ -2,89 +2,84 @@ import sys
 from collections import deque
 input = sys.stdin.readline
 
-# 2**N을 매번 계산하지 않고 변수로 저장
-n_exp, q_count = map(int, input().split())
-N = 1 << n_exp 
-ices = [list(map(int, input().split())) for _ in range(N)]
-l_list = list(map(int, input().split()))
+# [최적화 1] 전체 로직을 함수 하나로 감싸서 '지역 변수'로 만듦
+def solve():
+    n, q = map(int, input().split())
+    N_SIZE = 1 << n # 2**n과 동일 (취향 차이)
+    ices = [list(map(int, input().split())) for _ in range(N_SIZE)]
+    l_list = list(map(int, input().split()))
 
-dx = [1, 0, -1, 0]
-dy = [0, 1, 0, -1]
+    dx = [1, 0, -1, 0]
+    dy = [0, 1, 0, -1]
 
-def rotate_subgrid(l):
-    sub_size = 1 << l # 2^L
-    new_ices = [[0] * N for _ in range(N)]
-    
-    # 격자 단위로 처리
-    for y in range(0, N, sub_size):
-        for x in range(0, N, sub_size):
-            # 부분 격자 떼어내기
-            chunk = [row[x:x+sub_size] for row in ices[y:y+sub_size]]
-            
-            # 90도 회전 (Pythonic way)
-            rotated_chunk = list(map(list, zip(*chunk[::-1])))
-            
-            # 다시 붙이기
-            for i in range(sub_size):
-                for j in range(sub_size):
-                    new_ices[y+i][x+j] = rotated_chunk[i][j]
-    return new_ices
+    # BFS는 호출 횟수가 적으므로 함수로 분리해도 괜찮음 (내부 함수로 정의)
+    def bfs(x, y, visited):
+        cnt = 1
+        q_bfs = deque([(x, y)])
+        visited[x][y] = True
 
-def melt_ice():
-    melt_candidates = []
-    for x in range(N):
-        for y in range(N):
-            if ices[x][y] == 0: continue
-            
-            cnt = 0
+        while q_bfs:
+            cx, cy = q_bfs.popleft()
             for i in range(4):
-                nx, ny = x + dx[i], y + dy[i]
-                if 0 <= nx < N and 0 <= ny < N and ices[nx][ny] > 0:
-                    cnt += 1
-            
-            if cnt < 3:
-                melt_candidates.append((x, y))
+                nx, ny = cx + dx[i], cy + dy[i]
+                if 0 <= nx < N_SIZE and 0 <= ny < N_SIZE:
+                    if ices[nx][ny] != 0 and not visited[nx][ny]:
+                        q_bfs.append((nx, ny))
+                        visited[nx][ny] = True
+                        cnt += 1
+        return cnt
+
+    for l in l_list:
+        sub_size = 1 << l # 2**l
+        
+        # 1. 회전 (Rotate)
+        # 0이면 회전할 필요 없음 (가지치기)
+        if l > 0:
+            for i in range(0, N_SIZE, sub_size):
+                for j in range(0, N_SIZE, sub_size):
+                    # 슬라이싱 + zip 활용 (작성하신 대로 잘 하셨습니다!)
+                    submatrix = [row[j:j+sub_size] for row in ices[i:i+sub_size]]
+                    rotated_sub_matrix = list(map(list, zip(*submatrix[::-1])))
+                    
+                    for idx in range(sub_size):
+                        ices[i+idx][j:j+sub_size] = rotated_sub_matrix[idx]
+        
+        # 2. 얼음 녹이기 (Reduce)
+        reduce_candidates = []
+        
+        # [최적화 2] is_reduce 함수 호출 제거 -> 코드 인라인(Inlining)
+        # 함수 호출 오버헤드(400만 번)가 사라짐
+        for i in range(N_SIZE):
+            for j in range(N_SIZE):
+                if ices[i][j] == 0: continue
+                
+                adj_cnt = 0
+                for k in range(4):
+                    nx, ny = i + dx[k], j + dy[k]
+                    if 0 <= nx < N_SIZE and 0 <= ny < N_SIZE:
+                        if ices[nx][ny] > 0:
+                            adj_cnt += 1
+                
+                if adj_cnt < 3:
+                    reduce_candidates.append((i, j))
+        
+        # 한꺼번에 녹이기
+        for i, j in reduce_candidates:
+            ices[i][j] -= 1
+
+    # 3. 정답 출력
+    ans_sum = sum(sum(row) for row in ices)
+    print(ans_sum)
+
+    ans_max = 0
+    visited = [[False]*N_SIZE for _ in range(N_SIZE)]
     
-    # 동시에 녹이기
-    for x, y in melt_candidates:
-        ices[x][y] -= 1
+    for i in range(N_SIZE):
+        for j in range(N_SIZE):
+            if not visited[i][j] and ices[i][j] != 0:
+                ans_max = max(ans_max, bfs(i, j, visited))
 
-def bfs(x, y):
-    q = deque([(x, y)])
-    visited[x][y] = True
-    cnt = 1
-    
-    while q:
-        cx, cy = q.popleft()
-        for i in range(4):
-            nx, ny = cx + dx[i], cy + dy[i]
-            # 범위 체크, 얼음 존재 여부, 방문 여부 확인
-            if 0 <= nx < N and 0 <= ny < N:
-                if ices[nx][ny] > 0 and not visited[nx][ny]:
-                    visited[nx][ny] = True
-                    q.append((nx, ny))
-                    cnt += 1
-    return cnt
+    print(ans_max)
 
-# --- Main Simulation ---
-for l in l_list:
-    # 1. 회전 (l이 0이면 회전해도 변화 없음 -> 최적화 가능하지만 그대로 둬도 무방)
-    if l > 0:
-        ices = rotate_subgrid(l)
-    
-    # 2. 얼음 녹이기
-    melt_ice()
-
-# --- Result Calculation ---
-total_ice = sum(sum(row) for row in ices)
-max_chunk = 0
-visited = [[False] * N for _ in range(N)]
-
-for i in range(N):
-    for j in range(N):
-        # [중요] 얼음이 있고 방문하지 않은 경우만 탐색
-        if ices[i][j] > 0 and not visited[i][j]:
-            max_chunk = max(max_chunk, bfs(i, j))
-
-print(total_ice)
-print(max_chunk)
+# 실행
+solve()
