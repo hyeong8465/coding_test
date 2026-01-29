@@ -22,16 +22,13 @@ dx = [1,0,-1,0]
 dy = [0,1,0,-1]
 
 def bfs(circles): 
-    visited = [[False]*m for _ in range(n)] # 필요없을 듯? 바로 circle에 0으로 업데이트하면
-    del_list = []
     plag = False
     
     for row in range(n):
         for col in range(m):
-            if visited[row][col] or circles[row][col] == 0: continue
+            if circles[row][col] == 0: continue
         
             q = deque([(row, col)])
-            visited[row][col] = True
             num = circles[row][col]
             # circles[row][col] = 0
 
@@ -45,15 +42,11 @@ def bfs(circles):
                     if ny == -1: ny = m-1
                     elif ny == m: ny = 0
 
-                    if 0<=nx<n and 0<=ny<m:
-                        if not visited[nx][ny] and circles[nx][ny] == num:
+                    if 0<=nx<n:
+                        if circles[nx][ny] == num:
                             q.append((nx,ny))
-                            visited[nx][ny] = True
-                            
                             circles[nx][ny] = 0
-                            del_list.append((nx, ny))
 
-            # if len(del_list) > 0:
                             circles[row][col] = 0
                             plag = True
 
@@ -71,15 +64,13 @@ rotation_orders = [list(map(int, input().split())) for _ in range(t)]
 
 
 for x, d, k in rotation_orders:
-    nx = x-1 # 0-based
     
     # rotation
-    if d == 0: # 시계 방향
-        for nnx in range(nx, n, x):
-            circles[nnx].rotate(k) # 맨 뒤를 앞으로, 시계방향
-    else: # 반시계
-        for nnx in range(nx, n, x):
-            circles[nnx].rotate(m-k)
+    for nx in range(x-1, n, x):
+        if d == 0: # 시계 방향
+            circles[nx].rotate(k) # 맨 뒤를 앞으로, 시계방향
+        else: # 반시계
+            circles[nx].rotate(-k)
     
     # print("==="*10)
     # for c in circles:
