@@ -1,5 +1,5 @@
 import sys
-sys.setrecursionlimit(2000)
+#sys.setrecursionlimit(2000)
 
 dice = list(map(int, input().split()))
 
