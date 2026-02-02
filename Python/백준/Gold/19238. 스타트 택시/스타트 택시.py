@@ -1,3 +1,4 @@
+# gemini 최적화
 from collections import deque
 import sys
 input = sys.stdin.readline
