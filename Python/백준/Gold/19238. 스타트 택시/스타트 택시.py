@@ -1,143 +1,119 @@
-"""
-13:36
-
-한 승객을 태워 목적지로 이동시키는 일을 M번 반복
-
-현재 위치에서 최단 거리가 가장 짧은 승객을 먼저 고름
-    그런 승객이 여러 명이명, 행 번호가 작은, 열 번호가 작은 승객부터 고름
-택시와 승객이 같은 위치에 있으면 최단거리는 0
-1칸 이동에 연료 1소모
-목적지에 성공적으로 이동시키면, 소모한 연료의 두배 획득
-연료가 바닥나면 실패, 업무 종료
-이동과 동시에 연료 바닥은 실패로 간주하지 않음
-모든 승객을 성공적으로 데려다 줄 수 있는가? 그렇다면 남은 연료의 양은?
-
-bfs
-O(M*N**2*2) M*bfs*2 -> 16만
-
-1. 가장 가까운 고객 탐색 bfs
-2. 해당 고객의 목적지까지 bfs
-
-"""
 from collections import deque
 import sys
 input = sys.stdin.readline
 
 n, m, fuel = map(int, input().split())
-board = []
-for _ in range(n):
-    board.append(list(map(int, input().split())))
+board = [list(map(int, input().split())) for _ in range(n)]
 
 x, y = map(int, input().split())
-x = x-1
-y = y-1
+x -= 1
+y -= 1
 
 customers = {}
 for _ in range(m):
-    start_x, start_y, end_x, end_y = map(int, input().split())
-    customers[(start_x-1, start_y-1)] = (end_x-1, end_y-1)
+    sr, sc, er, ec = map(int, input().split())
+    customers[(sr-1, sc-1)] = (er-1, ec-1)
 
-# 이걸로 우선순위 조건이 충분한가?
-# 상, 좌, 우, 하
-dx = [-1,0,0,1]
-dy = [0,-1,1,0]
+dx = [-1, 0, 0, 1]
+dy = [0, -1, 1, 0]
 
-def find_customer(start_x, start_y): # return start_x, start_y, 거리 
+def find_customer(start_x, start_y):
+    # 시작 위치에 바로 승객이 있는 경우 (거리 0)
     if (start_x, start_y) in customers:
-        return [(start_x, start_y, 0)]
+        return (start_x, start_y, 0)
     
     visited = [[False] * n for _ in range(n)]
     q = deque([(start_x, start_y, 0)])
     visited[start_x][start_y] = True
+    
+    candidates = []
+    min_dist = float('inf') # 최단 거리 기록용
 
-    temp = []
     while q:
-        x, y, dist = q.popleft()
+        cx, cy, dist = q.popleft()
+        
+        # [최적화] 이미 찾은 최단 거리보다 더 멀리 가려고 하면 탐색 중단
+        if dist >= min_dist:
+            break
 
         for i in range(4):
-            nx, ny = x+dx[i], y+dy[i]
-            if 0<=nx<n and 0<=ny<n:
+            nx, ny = cx + dx[i], cy + dy[i]
+            
+            if 0 <= nx < n and 0 <= ny < n:
                 if not visited[nx][ny] and board[nx][ny] == 0:
-                    q.append((nx,ny,dist+1))
                     visited[nx][ny] = True
                     if (nx, ny) in customers:
-                        temp.append((nx, ny, dist+1))
-    temp.sort(key = lambda x:(x[2], x[0], x[1]))
-    return temp
+                        # 승객 발견
+                        min_dist = dist + 1
+                        candidates.append((nx, ny, dist + 1))
+                    else:
+                        q.append((nx, ny, dist + 1))
+    
+    if not candidates:
+        return None
+    
+    # 거리 -> 행 -> 열 순서 정렬
+    candidates.sort(key=lambda x: (x[2], x[0], x[1]))
+    return candidates[0]
 
 def find_destination(start_x, start_y, end_x, end_y):
-    # print(111, start_x, start_y, end_x, end_y)
-    if start_x == end_x and start_y == end_y:
-        return (end_x, end_y, 0)
-    
     visited = [[False] * n for _ in range(n)]
     q = deque([(start_x, start_y, 0)])
     visited[start_x][start_y] = True
-
-    while q:
-        # print(q)
-        x, y, dist = q.popleft()
-
-        for i in range(4):
-            nx, ny = x+dx[i], y+dy[i]
-            if 0<=nx<n and 0<=ny<n:
-                if not visited[nx][ny] and board[nx][ny] == 0:
-                    if nx == end_x and ny == end_y:
-                        return (nx, ny, dist+1)
-                    q.append((nx,ny,dist+1))
-                    visited[nx][ny] = True
-    return -1 # 목적지에 도착할 수 없는 경우
-
-# main
-for _ in range(m):
-    temp = find_customer(x, y)
     
-    if len(temp) == 0:
+    while q:
+        cx, cy, dist = q.popleft()
+        
+        if cx == end_x and cy == end_y:
+            return dist
+        
+        for i in range(4):
+            nx, ny = cx + dx[i], cy + dy[i]
+            if 0 <= nx < n and 0 <= ny < n:
+                if not visited[nx][ny] and board[nx][ny] == 0:
+                    visited[nx][ny] = True
+                    q.append((nx, ny, dist + 1))
+    return -1
+
+# Main Logic
+for _ in range(m):
+    # 1. 최단 거리 승객 찾기
+    result = find_customer(x, y)
+    
+    if result is None:
         print(-1)
         quit()
-    # print(temp)
-    start_x, start_y, dist = temp[0]
-    # print(start_x, start_y, dist)
+        
+    start_x, start_y, dist = result
     
+    # 2. 승객에게 이동 (연료 체크)
+    # [수정] 이동할 거리가 연료보다 많으면 실패 (같으면 성공)
     if fuel - dist < 0:
         print(-1)
         quit()
+        
     fuel -= dist
-
     end_x, end_y = customers[(start_x, start_y)]
-    del customers[(start_x, start_y)]
+    del customers[(start_x, start_y)] # 탑승한 승객 목록에서 제거
     
-    temp = find_destination(start_x, start_y, end_x, end_y)
+    # 3. 목적지로 이동
+    dist_to_dest = find_destination(start_x, start_y, end_x, end_y)
     
-    if temp == -1:
+    if dist_to_dest == -1: # 목적지 도달 불가
         print(-1)
         quit()
+        
+    # [수정] 이동할 거리가 연료보다 많으면 실패 (같으면 성공)
+    if fuel - dist_to_dest < 0:
+        print(-1)
+        quit()
+        
+    fuel -= dist_to_dest
     
-    x, y, dist = temp 
-    # print(x,y,dist)
+    # 4. 연료 충전 (소모한 연료의 2배 충전)
+    fuel += dist_to_dest * 2
+    
+    # 택시 위치 갱신
+    x, y = end_x, end_y
 
-    if fuel-dist < 0:
-        print(-1)
-        quit()
-    
-    fuel -= dist
-    
-    fuel += dist*2
-    # print(fuel)
 print(fuel)
-    
-
-"""
-엣지 케이스에 조심
-1. 같은 거리에서 우선 순위
-2. 
-
-
-"""
-    
-    
-
-
-
-
-
