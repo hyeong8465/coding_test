@@ -117,15 +117,19 @@ def find_groups(grid):
     # print(best_group)
     return best_group
 
+# O(N^2) 중력 함수 예시
 def fall(grid):
-    for r in range(n):
-        for c in range(n):
-            if grid[r][c] == -2:
-                for i in range(r,0,-1):
-                    if grid[i-1][c] == -1:
-                        break
-                    grid[i][c], grid[i-1][c] = grid[i-1][c], grid[i][c]
-
+    n = len(grid)
+    for c in range(n):
+        top = n - 1
+        for r in range(n - 1, -1, -1):
+            if grid[r][c] == -1:
+                top = r - 1
+            elif grid[r][c] >= 0:
+                if r != top:
+                    grid[top][c] = grid[r][c]
+                    grid[r][c] = -2
+                top -= 1
     return grid
 
 score = 0
