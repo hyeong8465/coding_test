@@ -18,13 +18,13 @@ def solution(maps):
     visited[0][0] = True
     while q:
         x,y,cnt = q.popleft()
+        if x == n-1 and y == m-1:
+            return cnt
         for i in range(4):
-            for j in range(4):
-                nx, ny = x+dx[i], y+dy[i]
-                if 0<=nx<n and 0<=ny<m:
-                    if not visited[nx][ny] and maps[nx][ny] == 1:
-                        if nx == n-1 and ny == m-1:
-                            return cnt+1
-                        q.append((nx,ny,cnt+1))
-                        visited[nx][ny] = True
+            nx, ny = x+dx[i], y+dy[i]
+            if 0<=nx<n and 0<=ny<m:
+                if not visited[nx][ny] and maps[nx][ny] == 1:
+                    
+                    q.append((nx,ny,cnt+1))
+                    visited[nx][ny] = True
     return -1
