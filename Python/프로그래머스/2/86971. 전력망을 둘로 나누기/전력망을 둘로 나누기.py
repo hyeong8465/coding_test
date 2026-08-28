@@ -1,5 +1,5 @@
 """
-15:21
+15:21 -> 16:01
 
 전선 하나를 끊어서 두 개의 네트워크로 만들거임
 각 네트워크에 속한 송전탑 갯수가 비슷하도록
@@ -15,26 +15,27 @@ def solution(n, wires):
 
     # graph 생성
     graph = [[] for _ in range(n+1)]
-    for x, y in wires:
+    for x, y in wires: # O(N)
         graph[x].append(y)
         graph[y].append(x)
 
     # dfs 정의
     def dfs(start, target_start, target_end, cnt):
-        for end in graph[start]:
+        cnt = 1
+        for end in graph[start]: # O(N)
             if not visited[end]:
-                if (start, end) in [(target_start, target_end), (target_end, target_start)]:
+                if {start, end} == {target_start, target_end}:
                     continue
                 visited[end] = True
-                cnt = max(cnt, dfs(end, target_start, target_end, cnt+1))
+                cnt += dfs(end, target_start, target_end, cnt+1)
         return cnt
 
-    for target_start, target_end in wires:
+    for target_start, target_end in wires: # O(V)
         # print(111, target_start, target_end)
-        visited = [False]*(n+1)
+        visited = [False]*(n+1) # O(N+1)
 
-        visited[1] = True
-        temp = dfs(1, target_start, target_end, 1)
+        visited[1] = True # O(1)
+        temp = dfs(1, target_start, target_end, 1) # 시간 복잡도??
         # print(temp, n-temp)
         answer = min(answer, abs(n-temp - temp))
     # print(answer)
