@@ -1,5 +1,5 @@
 """
-10:47
+10:47 -> 11:03
 
 최대 2명이 탑승 가능한 구명보트 + 무게 제한
 구명보트 최대한 적게 사용
@@ -8,6 +8,7 @@
 정렬 - 좌우 끝에서 하나씩?
 투포인터
 
+시간 복잡도 O(NlogN + N) = O(NlogN)
 
 """
 def solution(people, limit):
@@ -15,15 +16,12 @@ def solution(people, limit):
     l, r = 0, len(people)-1
     people.sort()
 
-    while l<r:
+    while l<=r:
         if people[l]+people[r] <= limit:
-            answer += 1
             l += 1
-            r -= 1
-        else:
-            r -= 1
+        answer += 1
+        r -= 1
 
-    answer += len(people)-2*answer # 남은 인원
-    print(answer)
+    # print(answer)
 
     return answer
