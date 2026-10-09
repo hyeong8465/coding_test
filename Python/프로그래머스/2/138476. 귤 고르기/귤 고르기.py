@@ -1,7 +1,3 @@
-"""
-14:42
-
-"""
 from collections import defaultdict
 
 def solution(k, tangerine):
